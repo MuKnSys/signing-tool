@@ -1,0 +1,13 @@
+; hosts.conf
+(hosts
+  (h1 "127.0.0.1:14001"
+    ("public_2038000235"
+     "public_3264215755"))
+  (h2 "127.0.0.1:14002"
+    ("public_527638679"
+     "public_72598528")))
+
+; each host will then run with its own "own_host" config file passed as arg
+; secrets are unordered but must exactly cover pubs for host
+;(own-host h1 ("secret_1055185202" "secret_455081187"))
+;(own-host h2 ("secret_351866765" "secret_4210760079"))

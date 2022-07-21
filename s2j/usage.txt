@@ -1,0 +1,2 @@
+./build.sh
+./s2j input.sexp output.json # creates output.json
