@@ -10,7 +10,7 @@ import "crypto/aes"
 type csprng struct {
   rem int
   st cipher.Stream
-  lck sync.Mutex
+  lck *sync.Mutex
 }
 const mebi int = 1048576
 func renew(c *csprng) {
@@ -45,17 +45,17 @@ func fill(r1 *csprng, dst []byte) {
     goto loop
 }
 
-var rng csprng = csprng{rem: 0}
+var rng *csprng = &csprng{rem: 0, lck: &sync.Mutex{}}
 
 /* This is the easy, sensible interface */
 
-func Fill(dst []byte) { fill(&rng, dst) }
+func Fill(dst []byte) { fill(rng, dst) }
 
 /* This is the peculiar Stream-inspired interface that kyber wants */
 
 // not a cipher.Stream in Liskov's sense
 type Rng interface { XORKeyStream(dst, src []byte) }
-func Get() Rng { return Rng(&rng) }
+func Get() Rng { return Rng(rng) }
 func (r *csprng) XORKeyStream(dst, src []byte) {
   var ls int = len(src)
   var ld int = len(dst)
