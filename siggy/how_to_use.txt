@@ -17,7 +17,7 @@ same but say h2_secret instead of h1_secret
 
 Each instance of main will be running some number of guests.
 You'll see the terminal print out that many "certified: true" messages.
-When both terminal have done that, you can end the programs with Ctrl-C.
+When both terminals have done that, you can end the processes with Ctrl-C.
 
 ----
 Hints for if you want to specify your own configuration (config.out),
