@@ -1,0 +1,40 @@
+----
+To build the DKG program
+
+Make sure this "siggy" directory has a sibling directory/project "csprng".
+
+( cd build/keygen && go build )
+( cd build/main && go build )
+
+Start two instances of main together (under a second or two apart):
+
+terminal 1:
+cd run
+./main config.out test_keys/public/ test_keys/h1_secret/ 3
+
+terminal 2:
+same but say h2_secret instead of h1_secret
+
+Each instance of main will be running some number of guests.
+You'll see the terminal print out that many "certified: true" messages.
+When both terminal have done that, you can end the programs with Ctrl-C.
+
+----
+Hints for if you want to specify your own configuration (config.out),
+- generate as many keypairs as you want by doing "cd run && ./keygen"
+- specify hosts and the members local to those hosts in run/config.in
+  - the h1, h2 labels are meaningless at present
+- generate config.out from config.in (see below)
+- place all the public key files in a directory D1 replicated to all hosts
+- give each host the secrets keys for members it will host
+  - let's say each host calls its secret key dir D2
+- on each host run "./main config.out $D1 $D2 $T" where T is desired threshold
+
+----
+Hints for converting config.in to config.out
+
+Preparation: Install GNU CLISP
+Step 1: Read and apply hostcomp/hostcomp.lisp to expand config.in
+Step 2: Use s2j to convert the expansion to a valid config.out JSON file
+
+Alternatively, hand-edit config.out directly.
