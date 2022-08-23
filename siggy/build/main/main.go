@@ -1,1 +1,0 @@
-../../src/main/main.go

@@ -1,0 +1,1 @@
+../../src/protocol/dkg_dto.go
