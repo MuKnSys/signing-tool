@@ -4,7 +4,7 @@ package main; import ("fmt"; "go.dedis.ch/kyber/v3/share/dkg/rabin")
 type _dkg_prot_dat struct { qual []int } /* entity */
 
 const (_op_init,_op_deal,_op_response,_op_justification,_op_vss_done,
-       _op_commits,_op_compl_commits,_op_recons_commits,_op_dkg_final int =
+       _op_commits,_op_compl_commits,_op_recons_commits,op_dkg_final int =
        0,1,2,3,4,5,6,7,8)
 
 func init() {
@@ -12,7 +12,6 @@ func init() {
     protocol{
       code:           pc_dkg,
       make_kyber_dat: make_dkg_kdat,
-      op_final:       _op_dkg_final,
       stages:
       []protocol_stage {
         ps(step_init,nil,nil,nil),
@@ -25,7 +24,7 @@ func init() {
         ps(nil,process_recons_commits,dto_to_recons_commits,ReconsCommitsDTO{}),
         ps(step_final,nil,nil,nil) } })}
 
-func make_dkg_kdat(g guest,members []member,threshold int) (any, error) {
+func make_dkg_kdat(g guest, members []member, threshold int) (any, error) {
   return dkg.NewDistKeyGenerator(suite, g.sec, member_pubs(members), threshold)}
 
 func _dkg_kdat(run *protocol_run) *dkg.DistKeyGenerator {
@@ -34,8 +33,8 @@ func _dkg_kdat(run *protocol_run) *dkg.DistKeyGenerator {
 func _dkg_pdat(r *protocol_run) *_dkg_prot_dat {
   return (*r).prot_dat.(*_dkg_prot_dat) }
 
-func _broadcast_qual[T,S any](run *protocol_run, op int, data T,
-                              marshaller func(T)(S,error)) {
+func broadcast_qual[T,S any](run *protocol_run, op int, data T,
+                             marshaller func(T)(S,error)) {
   var (dto any; e error)
   dto, e = marshaller(data)
   if e != nil {warn_prg(e); return}
@@ -87,21 +86,21 @@ func step_commits(run *protocol_run) {
   if abandoned(run) { return }
   sc, e = _dkg_kdat(run).SecretCommits()
   if e != nil { warn_prg(e); abandon(run); return }
-  _broadcast_qual(run, _op_commits, sc, commits_to_dto) }
+  broadcast_qual(run, _op_commits, sc, commits_to_dto) }
 
 func process_commits(run *protocol_run, commits any) {
   var (c *dkg.ComplaintCommits; e error)
   c, e = _dkg_kdat(run).ProcessSecretCommits(commits.(*dkg.SecretCommits))
   if e != nil { warn(e); return }
   if c == nil { return }
-  _broadcast_qual(run, _op_compl_commits, c, compl_commits_to_dto) }
+  broadcast_qual(run, _op_compl_commits, c, compl_commits_to_dto) }
 
 func process_compl_commits(run *protocol_run, compl any) {
   var (r *dkg.ReconstructCommits; e error)
   r, e = _dkg_kdat(run).ProcessComplaintCommits(compl.(*dkg.ComplaintCommits))
   if e != nil { warn(e); return }
   if r == nil { return }
-  _broadcast_qual(run, _op_recons_commits, r, recons_commits_to_dto) }
+  broadcast_qual(run, _op_recons_commits, r, recons_commits_to_dto) }
 
 func process_recons_commits(run *protocol_run, recons any) {
   warn_if_err(
@@ -112,8 +111,9 @@ func step_final(run *protocol_run) {
   var (share *dkg.DistKeyShare; e error)
   if _dkg_kdat(run).Finished() {
     share, e = _dkg_kdat(run).DistKeyShare()
-    if e != nil { warn(e); return }
+    if e != nil { abandon(run); warn(e); return }
+    note_dks((*run).guest_index, (*run).id, share, (*_dkg_pdat(run)).qual)
     fmt.Println("DistKeyShare: ", share)
   } else {
-    fmt.Println("finished is false")
+    abandon(run); fmt.Println("finished is false")
   } }

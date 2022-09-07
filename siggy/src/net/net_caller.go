@@ -57,14 +57,17 @@ func _run_connector(addr string, conn_ch chan *rpc.Client) {
 
 /* returns nil on failure */
 func _try_connect(attempts int, addr string) *rpc.Client {
-  var (c *rpc.Client; i int; err error)
+  var (c *rpc.Client; i int; err error; delay time.Duration = _retry_delay())
   for i = 0; i < attempts; i++ {
-    if (i > 0) {time.Sleep(_retry_delay())}
+    { var d time.Duration; if i == 0 {d = peer_start_grace} else {d = delay}
+      time.Sleep(d) }
     c, err = rpc.DialHTTP("tcp", addr)
     if err != nil {c = nil} else {break} }
   return c }
 
+const peer_start_grace time.Duration = 2000 * time.Millisecond
+
 func _retry_delay() time.Duration {
-  return time.Duration(1000 + mrand.Int63n(3000)) * time.Millisecond }
+  return time.Duration(100 + mrand.Int63n(900)) * time.Millisecond }
 
 func _min(x, y time.Duration) time.Duration {if x<y {return x} else {return y}}

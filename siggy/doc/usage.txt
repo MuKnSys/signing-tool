@@ -2,22 +2,24 @@
 To build the DKG program
 
 Ensure that the "siggy" directory has a sibling directory/project "csprng".
+And "ch".
 
 ( cd build/keygen && go build )
 ( cd build/signode && go build )
 
-Start two instances of signode together (under a second or two apart):
+The main program is called signode.
+It can be used to generate a longterm distributed key and also to sign.
 
-terminal 1:
+Here is how to run all members in a single process:
+
 cd run
-./signode config.out test_keys/public/ test_keys/h1_secret/ 3
-
-terminal 2:
-same but say h2_secret instead of h1_secret
-
-Each instance of signode will be running some number of guests.
-You'll see its terminal print out that many "certified: true" messages.
-When both terminals have done that, you can end the processes with Ctrl-C.
+# generate a longterm distributed key (needn't repeat this per signing)
+./signode config.out test_keys/public/ test_keys/p1_secret/ 2 _
+# the program prints the name of a file in /tmp containing the longterm shares
+# move the file to test_keys/p1_secret/longterms_t2
+# this is how you can then sign the hash of an empty document
+./signode config.out test_keys/public/ test_keys/p1_secret/ 2 _ \
+    test_keys/p1_secret/longterms_t2 `sha256sum </dev/null | awk '{print $1}'`
 
 ----
 Hints for if you want to specify your own configuration (config.out),
@@ -26,9 +28,14 @@ Hints for if you want to specify your own configuration (config.out),
   - the h1, h2 labels are meaningless at present
 - generate config.out from config.in (see below)
 - place all the public key files in a directory D replicated to all hosts
-- give each host the secrets keys for members it will host
+- give each host the secret keys for members it will host
   - let's say each host calls its secret key dir S
-- on each host run "./signode config.out $D $S $T" where T is desired threshold
+- on each host run "./signode config.out $D $S $T $starttime"
+    to generate the longterm distributed key,
+    where T is desired threshold and startime tells each host when the group
+      must start the run
+- the same command but with additional args <longterm_file_path> <hash>
+    will run the signing protocol to sign the hash
 
 ----
 Hints for converting config.in to config.out

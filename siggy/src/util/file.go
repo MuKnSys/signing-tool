@@ -1,16 +1,30 @@
-package main; import ("os"; "io/fs"; "strings"; "fmt"; "encoding")
+package main; import ("os";"io/fs";"strings";"fmt";"encoding";"encoding/gob")
 
 func save_to_temp(b encoding.BinaryMarshaler, file_prefix string) {
   var output *os.File; var ba []byte; var err error
   ba, err = b.MarshalBinary(); assert_nil(err)
   output = _create_temp(file_prefix)
-  fmt.Println(output.Name())
   _, err = output.Write(ba); assert_nil(err)
   assert_nil(output.Close()) }
+
+func save_gob_to_temp(x any, file_prefix string) {
+  var (output *os.File; e error; enc *gob.Encoder)
+  output = _create_temp(file_prefix)
+  enc = gob.NewEncoder(output)
+  e = enc.Encode(x); assert_nil(e)
+  assert_nil(output.Close()) }
+
+func load_gob(x any, infile string) {
+  var (f *os.File; e error; dec *gob.Decoder)
+  f, e = os.Open(infile); assert_nil(e)
+  dec = gob.NewDecoder(f)
+  e = dec.Decode(x); assert_nil(e)
+  assert_nil(f.Close()) }
 
 func _create_temp(prefix string) *os.File {
   var result *os.File; var err error
   result, err = os.CreateTemp("", prefix); assert_nil(err)
+  fmt.Println(result.Name())
   return result }
 
 /* loads from dir each file whose name matches prefix */

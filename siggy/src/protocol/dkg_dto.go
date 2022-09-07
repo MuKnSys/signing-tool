@@ -37,14 +37,14 @@ func dto_to_deal(dto1 any) (any, error) {
                              Cipher: dto.EncDealCipher}},
          nil }
 
-type _pri_share_dto struct { I int; V []byte }
+type pri_share_dto struct { I int; V []byte }
 
-func _pri_share_to_dto(s *share.PriShare) (_pri_share_dto, error) {
+func pri_share_to_dto(s *share.PriShare) (pri_share_dto, error) {
   var (vb []byte; e error)
-  vb, e = (*s).V.MarshalBinary(); if e != nil { return _pri_share_dto{}, e }
-  return _pri_share_dto { I: (*s).I, V: vb }, nil }
+  vb, e = (*s).V.MarshalBinary(); if e != nil { return pri_share_dto{}, e }
+  return pri_share_dto { I: (*s).I, V: vb }, nil }
 
-func _dto_to_pri_share(dto _pri_share_dto) (*share.PriShare, error) {
+func dto_to_pri_share(dto pri_share_dto) (*share.PriShare, error) {
   var (sec kyber.Scalar; e error)
   sec = suite.Scalar()
   e = sec.UnmarshalBinary(dto.V); if e != nil {return nil, e}
@@ -52,14 +52,14 @@ func _dto_to_pri_share(dto _pri_share_dto) (*share.PriShare, error) {
 
 type _vss_deal_dto struct {
   SessionID []byte
-  SecShare, RndShare _pri_share_dto
+  SecShare, RndShare pri_share_dto
   T uint32; Commitments [][]byte
 }
 
 func _vss_deal_to_dto(deal *vss.Deal) (_vss_deal_dto, error) {
-  var (sp, rp _pri_share_dto; cbs [][]byte; c kyber.Point; i int; e error)
-  sp,e=_pri_share_to_dto((*deal).SecShare); if e!=nil{return _vss_deal_dto{},e}
-  rp,e=_pri_share_to_dto((*deal).RndShare); if e!=nil{return _vss_deal_dto{},e}
+  var (sp, rp pri_share_dto; cbs [][]byte; c kyber.Point; i int; e error)
+  sp,e=pri_share_to_dto((*deal).SecShare); if e!=nil{return _vss_deal_dto{},e}
+  rp,e=pri_share_to_dto((*deal).RndShare); if e!=nil{return _vss_deal_dto{},e}
   cbs = make([][]byte, len((*deal).Commitments))
   for i, c = range (*deal).Commitments {
     cbs[i], e = c.MarshalBinary(); if e != nil {return _vss_deal_dto{}, e}}
@@ -71,8 +71,8 @@ func _vss_deal_to_dto(deal *vss.Deal) (_vss_deal_dto, error) {
 
 func _dto_to_vss_deal(d _vss_deal_dto) (*vss.Deal, error) {
   var (sec, rnd *share.PriShare; cs []kyber.Point; b []byte; i int; e error)
-  sec, e = _dto_to_pri_share(d.SecShare); if e!=nil {return nil, e}
-  rnd, e = _dto_to_pri_share(d.RndShare); if e!=nil {return nil, e}
+  sec, e = dto_to_pri_share(d.SecShare); if e!=nil {return nil, e}
+  rnd, e = dto_to_pri_share(d.RndShare); if e!=nil {return nil, e}
   cs = make([]kyber.Point, len(d.Commitments))
   for i, b = range d.Commitments {
     cs[i]=suite.Point(); e=cs[i].UnmarshalBinary(b); if e!=nil{return nil,e}}
@@ -178,13 +178,13 @@ type ReconsCommitsDTO struct {
   SessionID []byte
   Index uint32
   DealerIndex uint32
-  Share _pri_share_dto
+  Share pri_share_dto
   Signature []byte
 }
 
 func recons_commits_to_dto(r *dkg.ReconstructCommits) (ReconsCommitsDTO,error) {
-  var (share _pri_share_dto; e error)
-  share,e=_pri_share_to_dto((*r).Share); if e!=nil{return ReconsCommitsDTO{},e}
+  var (share pri_share_dto; e error)
+  share,e=pri_share_to_dto((*r).Share); if e!=nil{return ReconsCommitsDTO{},e}
   return ReconsCommitsDTO {
            SessionID: (*r).SessionID,
            Index: (*r).Index,
@@ -196,7 +196,7 @@ func recons_commits_to_dto(r *dkg.ReconstructCommits) (ReconsCommitsDTO,error) {
 func dto_to_recons_commits(dto1 any) (any,error) {
   var (dto ReconsCommitsDTO; share *share.PriShare; e error)
   dto = dto1.(ReconsCommitsDTO)
-  share, e = _dto_to_pri_share(dto.Share); if e != nil {return nil, e}
+  share, e = dto_to_pri_share(dto.Share); if e != nil {return nil, e}
   return &dkg.ReconstructCommits {
             SessionID: dto.SessionID,
             Index: dto.Index,

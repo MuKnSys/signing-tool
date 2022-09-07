@@ -1,0 +1,274 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+Add	secp256k1/field.go	/^func (f *fieldElt) Add(a, b *fieldElt) *fieldElt {$/;"	f
+Add	secp256k1/point.go	/^func (P *secp256k1Point) Add(a, b kyber.Point) kyber.Point {$/;"	f
+Add	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Add(a, b kyber.Scalar) kyber.Scalar {$/;"	f
+Address	secp256k1/public_key.go	/^func (k *PublicKey) Address() common.Address {$/;"	f
+AllowVarTime	secp256k1/scalar.go	/^func (s *secp256k1Scalar) AllowVarTime(varTimeAllowed bool) {$/;"	f
+Base	secp256k1/point.go	/^func (P *secp256k1Point) Base() kyber.Point {$/;"	f
+Bytes	secp256k1/field.go	/^func (f *fieldElt) Bytes() [32]byte {$/;"	f
+ChallengeHash	ethschnorr/ethschnorr.go	/^func ChallengeHash(public kyber.Point, rAddress [20]byte, msg *big.Int) ($/;"	f
+Clone	secp256k1/field.go	/^func (f *fieldElt) Clone() *fieldElt { return newFieldZero().Set(f.modQ()) }$/;"	f
+Clone	secp256k1/point.go	/^func (P *secp256k1Point) Clone() kyber.Point {$/;"	f
+Clone	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Clone() kyber.Scalar {$/;"	f
+CompressedPublicKeyLength	secp256k1/public_key.go	/^const CompressedPublicKeyLength = 33$/;"	c
+Coordinates	secp256k1/point.go	/^func Coordinates(p kyber.Point) (*big.Int, *big.Int) {$/;"	f
+DSS	ethdss/ethdss.go	/^type DSS struct {$/;"	t
+DSSArgs	ethdss/ethdss.go	/^type DSSArgs = struct {$/;"	t
+Data	secp256k1/point.go	/^func (P *secp256k1Point) Data() ([]byte, error) {$/;"	f
+DistKeyShare	ethdss/ethdss.go	/^type DistKeyShare interface {$/;"	t
+Div	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Div(a, b kyber.Scalar) kyber.Scalar {$/;"	f
+Embed	secp256k1/point.go	/^func (P *secp256k1Point) Embed(data []byte, r cipher.Stream) kyber.Point {$/;"	f
+EmbedLen	secp256k1/point.go	/^func (*secp256k1Point) EmbedLen() int {$/;"	f
+EnoughPartialSig	ethdss/ethdss.go	/^func (d *DSS) EnoughPartialSig() bool {$/;"	f
+Equal	secp256k1/field.go	/^func (f *fieldElt) Equal(g *fieldElt) bool {$/;"	f
+Equal	secp256k1/point.go	/^func (P *secp256k1Point) Equal(pPrime kyber.Point) bool {$/;"	f
+Equal	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Equal(sPrime kyber.Scalar) bool {$/;"	f
+EthereumAddress	secp256k1/point.go	/^func EthereumAddress(p kyber.Point) (rv [20]byte) {$/;"	f
+FieldSize	secp256k1/scalar.go	/^var FieldSize = secp256k1BTCD.S256().P$/;"	v
+Generate	secp256k1/point.go	/^func Generate(random cipher.Stream) *key.Pair {$/;"	f
+GroupOrder	secp256k1/scalar.go	/^var GroupOrder = secp256k1BTCD.S256().N$/;"	v
+Hash	ethdss/ethdss.go	/^func (ps *PartialSig) Hash() *big.Int {$/;"	f
+Hash	secp256k1/public_key.go	/^func (k *PublicKey) Hash() (common.Hash, error) {$/;"	f
+Hash	secp256k1/suite.go	/^func (s *SuiteSecp256k1) Hash() hash.Hash {$/;"	f
+IntToScalar	secp256k1/scalar.go	/^func IntToScalar(i *big.Int) kyber.Scalar {$/;"	f
+Inv	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Inv(a kyber.Scalar) kyber.Scalar {$/;"	f
+IsSecp256k1Point	secp256k1/point.go	/^func IsSecp256k1Point(p kyber.Point) bool {$/;"	f
+IsSecp256k1Scalar	secp256k1/scalar.go	/^func IsSecp256k1Scalar(s kyber.Scalar) bool {$/;"	f
+IsZero	secp256k1/public_key.go	/^func (k *PublicKey) IsZero() bool {$/;"	f
+LongMarshal	secp256k1/point.go	/^func LongMarshal(p kyber.Point) []byte {$/;"	f
+LongUnmarshal	secp256k1/point.go	/^func LongUnmarshal(m []byte) (kyber.Point, error) {$/;"	f
+MarshalBinary	secp256k1/point.go	/^func (P *secp256k1Point) MarshalBinary() ([]byte, error) {$/;"	f
+MarshalBinary	secp256k1/scalar.go	/^func (s *secp256k1Scalar) MarshalBinary() ([]byte, error) {$/;"	f
+MarshalID	secp256k1/point.go	/^func (P *secp256k1Point) MarshalID() [8]byte {$/;"	f
+MarshalID	secp256k1/scalar.go	/^func (s *secp256k1Scalar) MarshalID() [8]byte {$/;"	f
+MarshalSize	secp256k1/point.go	/^func (P *secp256k1Point) MarshalSize() int { return 33 }$/;"	f
+MarshalSize	secp256k1/scalar.go	/^func (s *secp256k1Scalar) MarshalSize() int { return 32 }$/;"	f
+MarshalText	secp256k1/public_key.go	/^func (k PublicKey) MarshalText() ([]byte, error) {$/;"	f
+MarshalTo	secp256k1/point.go	/^func (P *secp256k1Point) MarshalTo(w io.Writer) (int, error) {$/;"	f
+MarshalTo	secp256k1/scalar.go	/^func (s *secp256k1Scalar) MarshalTo(w io.Writer) (int, error) {$/;"	f
+Mul	secp256k1/point.go	/^func (P *secp256k1Point) Mul(s kyber.Scalar, a kyber.Point) kyber.Point {$/;"	f
+Mul	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Mul(a, b kyber.Scalar) kyber.Scalar {$/;"	f
+MustHash	secp256k1/public_key.go	/^func (k *PublicKey) MustHash() common.Hash {$/;"	f
+Neg	secp256k1/field.go	/^func (f *fieldElt) Neg(g *fieldElt) *fieldElt {$/;"	f
+Neg	secp256k1/point.go	/^func (P *secp256k1Point) Neg(a kyber.Point) kyber.Point {$/;"	f
+Neg	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Neg(a kyber.Scalar) kyber.Scalar {$/;"	f
+New	secp256k1/suite.go	/^func (s *SuiteSecp256k1) New(t reflect.Type) interface{} {$/;"	f
+NewBlakeKeccackSecp256k1	secp256k1/suite.go	/^func NewBlakeKeccackSecp256k1() *SuiteSecp256k1 {$/;"	f
+NewDSS	ethdss/ethdss.go	/^func NewDSS(args DSSArgs) (*DSS, error) {$/;"	f
+NewPublicKeyFromBytes	secp256k1/public_key.go	/^func NewPublicKeyFromBytes(rawKey []byte) (PublicKey, error) {$/;"	f
+NewPublicKeyFromHex	secp256k1/public_key.go	/^func NewPublicKeyFromHex(hex string) (PublicKey, error) {$/;"	f
+NewSignature	ethschnorr/ethschnorr.go	/^func NewSignature() Signature { return &signature{Signature: i()} }$/;"	f
+NewStream	cryptotest/cryptotest.go	/^func NewStream(t *testing.T, seed int64) *randomStream {$/;"	f
+Null	secp256k1/point.go	/^func (P *secp256k1Point) Null() kyber.Point {$/;"	f
+One	secp256k1/scalar.go	/^func (s *secp256k1Scalar) One() kyber.Scalar {$/;"	f
+PartialSig	ethdss/ethdss.go	/^func (d *DSS) PartialSig() (*PartialSig, error) {$/;"	f
+PartialSig	ethdss/ethdss.go	/^type PartialSig struct {$/;"	t
+Pick	secp256k1/field.go	/^func (f *fieldElt) Pick(rand cipher.Stream) *fieldElt {$/;"	f
+Pick	secp256k1/point.go	/^func (P *secp256k1Point) Pick(rand cipher.Stream) kyber.Point {$/;"	f
+Pick	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Pick(rand cipher.Stream) kyber.Scalar {$/;"	f
+Point	secp256k1/curve.go	/^func (*Secp256k1) Point() kyber.Point {$/;"	f
+Point	secp256k1/public_key.go	/^func (k *PublicKey) Point() (kyber.Point, error) {$/;"	f
+PointLen	secp256k1/curve.go	/^func (*Secp256k1) PointLen() int { return egPoint.MarshalSize() }$/;"	f
+ProcessPartialSig	ethdss/ethdss.go	/^func (d *DSS) ProcessPartialSig(ps *PartialSig) error {$/;"	f
+PublicKey	secp256k1/public_key.go	/^type PublicKey [CompressedPublicKeyLength]byte$/;"	t
+RandomStream	secp256k1/suite.go	/^func (s *SuiteSecp256k1) RandomStream() cipher.Stream {$/;"	f
+Read	secp256k1/suite.go	/^func (s *SuiteSecp256k1) Read(r io.Reader, objs ...interface{}) error {$/;"	f
+RepresentsScalar	secp256k1/scalar.go	/^func RepresentsScalar(i *big.Int) bool {$/;"	f
+Scalar	secp256k1/curve.go	/^func (*Secp256k1) Scalar() kyber.Scalar { return newScalar(big.NewInt(0)) }$/;"	f
+ScalarLen	secp256k1/curve.go	/^func (*Secp256k1) ScalarLen() int { return egScalar.MarshalSize() }$/;"	f
+ScalarToHash	secp256k1/scalar.go	/^func ScalarToHash(s kyber.Scalar) common.Hash {$/;"	f
+ScalarToPublicPoint	secp256k1/point.go	/^func ScalarToPublicPoint(s kyber.Scalar) kyber.Point {$/;"	f
+Scan	secp256k1/public_key.go	/^func (k *PublicKey) Scan(value interface{}) error {$/;"	f
+Secp256k1	secp256k1/curve.go	/^type Secp256k1 struct{}$/;"	t
+Set	secp256k1/field.go	/^func (f *fieldElt) Set(v *fieldElt) *fieldElt {$/;"	f
+Set	secp256k1/point.go	/^func (P *secp256k1Point) Set(pPrime kyber.Point) kyber.Point {$/;"	f
+Set	secp256k1/public_key.go	/^func (k *PublicKey) Set(l PublicKey) {$/;"	f
+Set	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Set(sPrime kyber.Scalar) kyber.Scalar {$/;"	f
+SetBytes	secp256k1/field.go	/^func (f *fieldElt) SetBytes(buf [32]byte) *fieldElt {$/;"	f
+SetBytes	secp256k1/scalar.go	/^func (s *secp256k1Scalar) SetBytes(a []byte) kyber.Scalar {$/;"	f
+SetCoordinates	secp256k1/point.go	/^func SetCoordinates(x, y *big.Int) kyber.Point {$/;"	f
+SetFromHex	secp256k1/public_key.go	/^func (k *PublicKey) SetFromHex(hex string) error {$/;"	f
+SetInt	secp256k1/field.go	/^func (f *fieldElt) SetInt(v *big.Int) *fieldElt {$/;"	f
+SetInt64	secp256k1/scalar.go	/^func (s *secp256k1Scalar) SetInt64(v int64) kyber.Scalar {$/;"	f
+Sign	ethschnorr/ethschnorr.go	/^func Sign(private kyber.Scalar, msg *big.Int) (Signature, error) {$/;"	f
+Signature	ethdss/ethdss.go	/^func (d *DSS) Signature() (ethschnorr.Signature, error) {$/;"	f
+Signature	ethschnorr/ethschnorr.go	/^type Signature = *signature$/;"	t
+String	secp256k1/curve.go	/^func (*Secp256k1) String() string { return "Secp256k1" }$/;"	f
+String	secp256k1/field.go	/^func (f *fieldElt) String() string {$/;"	f
+String	secp256k1/point.go	/^func (P *secp256k1Point) String() string {$/;"	f
+String	secp256k1/public_key.go	/^func (k PublicKey) String() string {$/;"	f
+String	secp256k1/scalar.go	/^func (s *secp256k1Scalar) String() string {$/;"	f
+StringUncompressed	secp256k1/public_key.go	/^func (k *PublicKey) StringUncompressed() (string, error) {$/;"	f
+Sub	secp256k1/field.go	/^func (f *fieldElt) Sub(a, b *fieldElt) *fieldElt {$/;"	f
+Sub	secp256k1/point.go	/^func (P *secp256k1Point) Sub(a, b kyber.Point) kyber.Point {$/;"	f
+Sub	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Sub(a, b kyber.Scalar) kyber.Scalar {$/;"	f
+Suite	ethdss/ethdss.go	/^type Suite interface {$/;"	t
+SuiteSecp256k1	secp256k1/suite.go	/^type SuiteSecp256k1 struct {$/;"	t
+TestCoordinates	secp256k1/point_test.go	/^func TestCoordinates(t *testing.T) {$/;"	f
+TestDSSNew	ethdss/ethdss_test.go	/^func TestDSSNew(t *testing.T) {$/;"	f
+TestDSSPartialSigs	ethdss/ethdss_test.go	/^func TestDSSPartialSigs(t *testing.T) {$/;"	f
+TestDSSSignature	ethdss/ethdss_test.go	/^func TestDSSSignature(t *testing.T) {$/;"	f
+TestFieldEltFromInt	secp256k1/field_test.go	/^func TestFieldEltFromInt(t *testing.T) {$/;"	f
+TestField_Clone	secp256k1/field_test.go	/^func TestField_Clone(t *testing.T) {$/;"	f
+TestField_Equal	secp256k1/field_test.go	/^func TestField_Equal(t *testing.T) {$/;"	f
+TestField_MaybeSquareRootInField	secp256k1/field_test.go	/^func TestField_MaybeSquareRootInField(t *testing.T) {$/;"	f
+TestField_Neg	secp256k1/field_test.go	/^func TestField_Neg(t *testing.T) {$/;"	f
+TestField_RightHandSide	secp256k1/field_test.go	/^func TestField_RightHandSide(t *testing.T) {$/;"	f
+TestField_Set	secp256k1/field_test.go	/^func TestField_Set(t *testing.T) {$/;"	f
+TestField_SetBytesAndBytes	secp256k1/field_test.go	/^func TestField_SetBytesAndBytes(t *testing.T) {$/;"	f
+TestField_SetIntAndEqual	secp256k1/field_test.go	/^func TestField_SetIntAndEqual(t *testing.T) {$/;"	f
+TestField_SmokeTestPick	secp256k1/field_test.go	/^func TestField_SmokeTestPick(t *testing.T) {$/;"	f
+TestField_String	secp256k1/field_test.go	/^func TestField_String(t *testing.T) {$/;"	f
+TestField_Sub	secp256k1/field_test.go	/^func TestField_Sub(t *testing.T) {$/;"	f
+TestGenerate	secp256k1/point_test.go	/^func TestGenerate(t *testing.T) {$/;"	f
+TestIsSecp256k1Point	secp256k1/point_test.go	/^func TestIsSecp256k1Point(t *testing.T) {$/;"	f
+TestNewScalar	secp256k1/scalar_test.go	/^func TestNewScalar(t *testing.T) {$/;"	f
+TestPartialSig_Hash	ethdss/ethdss_test.go	/^func TestPartialSig_Hash(t *testing.T) {$/;"	f
+TestPoint_AddSubAndNeg	secp256k1/point_test.go	/^func TestPoint_AddSubAndNeg(t *testing.T) {$/;"	f
+TestPoint_BaseTakesCopy	secp256k1/point_test.go	/^func TestPoint_BaseTakesCopy(t *testing.T) {$/;"	f
+TestPoint_CloneAndEqual	secp256k1/point_test.go	/^func TestPoint_CloneAndEqual(t *testing.T) {$/;"	f
+TestPoint_Embed	secp256k1/point_test.go	/^func TestPoint_Embed(t *testing.T) {$/;"	f
+TestPoint_EthereumAddress	secp256k1/point_test.go	/^func TestPoint_EthereumAddress(t *testing.T) {$/;"	f
+TestPoint_Marshal	secp256k1/point_test.go	/^func TestPoint_Marshal(t *testing.T) {$/;"	f
+TestPoint_Mul	secp256k1/point_test.go	/^func TestPoint_Mul(t *testing.T) {$/;"	f
+TestPoint_NullAndAdd	secp256k1/point_test.go	/^func TestPoint_NullAndAdd(t *testing.T) {$/;"	f
+TestPoint_Set	secp256k1/point_test.go	/^func TestPoint_Set(t *testing.T) {$/;"	f
+TestPoint_String	secp256k1/point_test.go	/^func TestPoint_String(t *testing.T) {$/;"	f
+TestScalar_AllowVarTime	secp256k1/scalar_test.go	/^func TestScalar_AllowVarTime(t *testing.T) {$/;"	f
+TestScalar_Clone	secp256k1/scalar_test.go	/^func TestScalar_Clone(t *testing.T) {$/;"	f
+TestScalar_DivPanicsOnZeroDivisor	secp256k1/scalar_test.go	/^func TestScalar_DivPanicsOnZeroDivisor(t *testing.T) {$/;"	f
+TestScalar_IntToScalar	secp256k1/scalar_test.go	/^func TestScalar_IntToScalar(t *testing.T) {$/;"	f
+TestScalar_InvPanicsOnZero	secp256k1/scalar_test.go	/^func TestScalar_InvPanicsOnZero(t *testing.T) {$/;"	f
+TestScalar_IsSecp256k1Scalar	secp256k1/scalar_test.go	/^func TestScalar_IsSecp256k1Scalar(t *testing.T) {$/;"	f
+TestScalar_Marshal	secp256k1/scalar_test.go	/^func TestScalar_Marshal(t *testing.T) {$/;"	f
+TestScalar_MulDivInv	secp256k1/scalar_test.go	/^func TestScalar_MulDivInv(t *testing.T) {$/;"	f
+TestScalar_Neg	secp256k1/scalar_test.go	/^func TestScalar_Neg(t *testing.T) {$/;"	f
+TestScalar_SetAndEqual	secp256k1/scalar_test.go	/^func TestScalar_SetAndEqual(t *testing.T) {$/;"	f
+TestScalar_SetBytes	secp256k1/scalar_test.go	/^func TestScalar_SetBytes(t *testing.T) {$/;"	f
+TestScalar_SetInt64	secp256k1/scalar_test.go	/^func TestScalar_SetInt64(t *testing.T) {$/;"	f
+TestScalar_SmokeTestPick	secp256k1/scalar_test.go	/^func TestScalar_SmokeTestPick(t *testing.T) {$/;"	f
+TestScalar_String	secp256k1/scalar_test.go	/^func TestScalar_String(t *testing.T) {$/;"	f
+TestScalar_Sub	secp256k1/scalar_test.go	/^func TestScalar_Sub(t *testing.T) {$/;"	f
+TestSecp256k1_Constructors	secp256k1/curve_test.go	/^func TestSecp256k1_Constructors(t *testing.T) {$/;"	f
+TestSecp256k1_String	secp256k1/curve_test.go	/^func TestSecp256k1_String(t *testing.T) {$/;"	f
+TestShortSchnorr_ChallengeHash	ethschnorr/ethschnorr_test.go	/^func TestShortSchnorr_ChallengeHash(t *testing.T) {$/;"	f
+TestShortSchnorr_NewSignature	ethschnorr/ethschnorr_test.go	/^func TestShortSchnorr_NewSignature(t *testing.T) {$/;"	f
+TestShortSchnorr_SignAndVerify	ethschnorr/ethschnorr_test.go	/^func TestShortSchnorr_SignAndVerify(t *testing.T) {$/;"	f
+TestSuite	secp256k1/suite_test.go	/^func TestSuite(t *testing.T) {$/;"	f
+TestValidPublicKey	secp256k1/point_test.go	/^func TestValidPublicKey(t *testing.T) {$/;"	f
+ToInt	secp256k1/scalar.go	/^func ToInt(s kyber.Scalar) *big.Int { return (*big.Int)(s.(*secp256k1Scalar)) }$/;"	f
+UnmarshalBinary	secp256k1/point.go	/^func (P *secp256k1Point) UnmarshalBinary(buf []byte) error {$/;"	f
+UnmarshalBinary	secp256k1/scalar.go	/^func (s *secp256k1Scalar) UnmarshalBinary(buf []byte) error {$/;"	f
+UnmarshalFrom	secp256k1/point.go	/^func (P *secp256k1Point) UnmarshalFrom(r io.Reader) (int, error) {$/;"	f
+UnmarshalFrom	secp256k1/scalar.go	/^func (s *secp256k1Scalar) UnmarshalFrom(r io.Reader) (int, error) {$/;"	f
+UnmarshalText	secp256k1/public_key.go	/^func (k *PublicKey) UnmarshalText(text []byte) error {$/;"	f
+ValidPublicKey	secp256k1/point.go	/^func ValidPublicKey(p kyber.Point) bool {$/;"	f
+ValidSignature	ethschnorr/ethschnorr.go	/^func ValidSignature(s Signature) bool {$/;"	f
+Value	secp256k1/public_key.go	/^func (k PublicKey) Value() (driver.Value, error) {$/;"	f
+Verify	ethdss/ethdss.go	/^func Verify(public kyber.Point, msg *big.Int, sig ethschnorr.Signature) error {$/;"	f
+Verify	ethschnorr/ethschnorr.go	/^func Verify(public kyber.Point, msg *big.Int, s Signature) error {$/;"	f
+Write	secp256k1/suite.go	/^func (s *SuiteSecp256k1) Write(w io.Writer, objs ...interface{}) error {$/;"	f
+XOF	secp256k1/suite.go	/^func (s *SuiteSecp256k1) XOF(key []byte) kyber.XOF {$/;"	f
+XORKeyStream	cryptotest/cryptotest.go	/^func (s *randomStream) XORKeyStream(dst, src []byte) {$/;"	f
+Zero	secp256k1/scalar.go	/^func (s *secp256k1Scalar) Zero() kyber.Scalar {$/;"	f
+_genDistSecret	ethdss/ethdss_test.go	/^func _genDistSecret() []*dkg.DistKeyShare {$/;"	f
+aPoint	secp256k1/suite.go	/^var aPoint kyber.Point$/;"	v
+aScalar	secp256k1/suite.go	/^var aScalar kyber.Scalar$/;"	v
+bigZero	secp256k1/field.go	/^var bigZero = big.NewInt(0)$/;"	v
+clientdss	ethdss/ethdss.go	/^package clientdss$/;"	p
+clientdss	ethdss/ethdss_test.go	/^package clientdss$/;"	p
+cryptotest	cryptotest/cryptotest.go	/^package cryptotest$/;"	p
+egPoint	secp256k1/curve.go	/^var egPoint kyber.Point = &secp256k1Point{newFieldZero(), newFieldZero()}$/;"	v
+egScalar	secp256k1/curve.go	/^var egScalar kyber.Scalar = newScalar(big.NewInt(0))$/;"	v
+ethschnorr	ethschnorr/ethschnorr.go	/^package ethschnorr$/;"	p
+ethschnorr	ethschnorr/ethschnorr_test.go	/^package ethschnorr$/;"	p
+fieldElt	secp256k1/field.go	/^type fieldElt big.Int$/;"	t
+fieldEltFromBigInt	secp256k1/field.go	/^func fieldEltFromBigInt(v *big.Int) *fieldElt { return (*fieldElt)(v).modQ() }$/;"	f
+fieldEltFromInt	secp256k1/field.go	/^func fieldEltFromInt(v int64) *fieldElt {$/;"	f
+fieldSquare	secp256k1/field.go	/^func fieldSquare(y *fieldElt) *fieldElt {$/;"	f
+fieldZero	secp256k1/field.go	/^var fieldZero = fieldEltFromInt(0)$/;"	v
+findPub	ethdss/ethdss.go	/^func findPub(list []kyber.Point, i int) (kyber.Point, bool) {$/;"	f
+genDistSecret	ethdss/ethdss_test.go	/^func genDistSecret(checkValidPublicKey bool) []*dkg.DistKeyShare {$/;"	f
+getDSS	ethdss/ethdss_test.go	/^func getDSS(i int) *DSS {$/;"	f
+group	secp256k1/curve_test.go	/^var group = &Secp256k1{}$/;"	v
+hashSig	ethdss/ethdss.go	/^func (d *DSS) hashSig() kyber.Scalar {$/;"	f
+i	ethschnorr/ethschnorr.go	/^func i() *big.Int { return big.NewInt(0) }$/;"	f
+init	ethdss/ethdss_test.go	/^func init() {$/;"	f
+init	secp256k1/field_test.go	/^func init() {$/;"	f
+init	secp256k1/public_key.go	/^func init() {$/;"	f
+init	secp256k1/scalar_test.go	/^func init() {$/;"	f
+int	secp256k1/field.go	/^func (f *fieldElt) int() *big.Int { return (*big.Int)(f) }$/;"	f
+int	secp256k1/scalar.go	/^func (s *secp256k1Scalar) int() *big.Int { return (*big.Int)(s) }$/;"	f
+isEven	secp256k1/field.go	/^func (f *fieldElt) isEven() bool {$/;"	f
+longterms	ethdss/ethdss_test.go	/^var longterms []*dkg.DistKeyShare$/;"	v
+maxUint256	ethschnorr/ethschnorr.go	/^var maxUint256 = i().Sub(u256Cardinality, one)$/;"	v
+maybeSqrtInField	secp256k1/field.go	/^func maybeSqrtInField(v *fieldElt) *fieldElt {$/;"	f
+modG	secp256k1/scalar.go	/^func (s *secp256k1Scalar) modG() kyber.Scalar {$/;"	f
+modQ	secp256k1/field.go	/^func (f *fieldElt) modQ() *fieldElt {$/;"	f
+msg	ethdss/ethdss_test.go	/^var msg *big.Int$/;"	v
+nbParticipants	ethdss/ethdss_test.go	/^var nbParticipants = 7$/;"	v
+newFieldZero	secp256k1/field.go	/^func newFieldZero() *fieldElt { return (*fieldElt)(big.NewInt(0)) }$/;"	f
+newPoint	secp256k1/point.go	/^func newPoint() *secp256k1Point {$/;"	f
+newScalar	secp256k1/scalar.go	/^func newScalar(v *big.Int) kyber.Scalar {$/;"	f
+numFieldSamples	secp256k1/field_test.go	/^var numFieldSamples = 10$/;"	v
+numPointSamples	secp256k1/point_test.go	/^var numPointSamples = 10$/;"	v
+numScalarSamples	secp256k1/scalar_test.go	/^var numScalarSamples = 10$/;"	v
+numSignatures	ethschnorr/ethschnorr_test.go	/^var numSignatures = 5$/;"	v
+observedFieldElt	secp256k1/field_test.go	/^func observedFieldElt(t *testing.T, s *fieldElt) {$/;"	f
+observedFieldElts	secp256k1/field_test.go	/^var observedFieldElts map[string]bool$/;"	v
+observedScalar	secp256k1/scalar_test.go	/^func observedScalar(t *testing.T, s kyber.Scalar) {$/;"	f
+observedScalars	secp256k1/scalar_test.go	/^var observedScalars map[string]bool$/;"	v
+one	ethschnorr/ethschnorr.go	/^var one = big.NewInt(1)$/;"	v
+partPubs	ethdss/ethdss_test.go	/^var partPubs []kyber.Point$/;"	v
+partSec	ethdss/ethdss_test.go	/^var partSec []kyber.Scalar$/;"	v
+printTest	ethdss/ethdss_test.go	/^func printTest(t *testing.T, msg *big.Int, public kyber.Point,$/;"	f
+printTest	ethschnorr/ethschnorr_test.go	/^func printTest(t *testing.T, msg *big.Int, private kyber.Scalar,$/;"	f
+printTests	ethdss/ethdss_test.go	/^var printTests = false$/;"	v
+printTests	ethschnorr/ethschnorr_test.go	/^var printTests = true$/;"	v
+q	secp256k1/field.go	/^var q = s256.P$/;"	v
+randomBytes	ethdss/ethdss_test.go	/^func randomBytes(n int) []byte {$/;"	f
+randomStream	cryptotest/cryptotest.go	/^type randomStream rand.Rand$/;"	t
+randomStream	ethdss/ethdss_test.go	/^var randomStream = cryptotest.NewStream(&testing.T{}, 0)$/;"	v
+randomStream	ethschnorr/ethschnorr_test.go	/^var randomStream = cryptotest.NewStream(&testing.T{}, 0)$/;"	v
+randomStream	secp256k1/field_test.go	/^var randomStream = cryptotest.NewStream(&testing.T{}, 0)$/;"	v
+randomStreamPoint	secp256k1/point_test.go	/^var randomStreamPoint = cryptotest.NewStream(&testing.T{}, 0)$/;"	v
+randomStreamScalar	secp256k1/scalar_test.go	/^var randomStreamScalar = cryptotest.NewStream(&testing.T{}, 0)$/;"	v
+randoms	ethdss/ethdss_test.go	/^var randoms []*dkg.DistKeyShare$/;"	v
+rightHandSide	secp256k1/field.go	/^func rightHandSide(x *fieldElt) *fieldElt {$/;"	f
+s256	secp256k1/curve.go	/^var s256 *secp256k1BTCD.KoblitzCurve = secp256k1BTCD.S256()$/;"	v
+scalarZero	secp256k1/scalar.go	/^var scalarZero = zero()$/;"	v
+secp256k1	secp256k1/curve.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/curve_test.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/field.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/field_test.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/point.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/point_test.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/public_key.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/scalar.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/scalar_test.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/suite.go	/^package secp256k1$/;"	p
+secp256k1	secp256k1/suite_test.go	/^package secp256k1$/;"	p
+secp256k1Group	ethdss/ethdss.go	/^var secp256k1Group kyber.Group = secp256k1Suite$/;"	v
+secp256k1Group	ethschnorr/ethschnorr.go	/^var secp256k1Group kyber.Group = secp256k1Suite$/;"	v
+secp256k1Point	secp256k1/point.go	/^type secp256k1Point struct {$/;"	t
+secp256k1Scalar	secp256k1/scalar.go	/^type secp256k1Scalar big.Int$/;"	t
+secp256k1Suite	ethdss/ethdss.go	/^var secp256k1Suite = secp256k1.NewBlakeKeccackSecp256k1()$/;"	v
+secp256k1Suite	ethschnorr/ethschnorr.go	/^var secp256k1Suite = secp256k1.NewBlakeKeccackSecp256k1()$/;"	v
+sessionID	ethdss/ethdss.go	/^func sessionID(s Suite, a, b DistKeyShare) []byte {$/;"	f
+seven	secp256k1/field.go	/^var seven = fieldEltFromInt(7)$/;"	v
+signature	ethschnorr/ethschnorr.go	/^type signature = struct {$/;"	t
+sqrtPower	secp256k1/field.go	/^var sqrtPower = s256.QPlus1Div4()$/;"	v
+suite	ethdss/ethdss_test.go	/^var suite = secp256k1.NewBlakeKeccackSecp256k1()$/;"	v
+t	ethdss/ethdss_test.go	/^var t = nbParticipants\/2 + 1$/;"	v
+tPoint	secp256k1/suite.go	/^var tPoint = reflect.TypeOf(aPoint)$/;"	v
+tScalar	secp256k1/suite.go	/^var tScalar = reflect.TypeOf(aScalar)$/;"	v
+three	secp256k1/field.go	/^var three = big.NewInt(3)$/;"	v
+two	secp256k1/field.go	/^var two = big.NewInt(2)$/;"	v
+u256Cardinality	ethschnorr/ethschnorr.go	/^var u256Cardinality = i().Lsh(one, 256)$/;"	v
+zero	ethschnorr/ethschnorr.go	/^var zero = i()$/;"	v
+zero	secp256k1/scalar.go	/^func zero() *big.Int { return big.NewInt(0) }$/;"	f

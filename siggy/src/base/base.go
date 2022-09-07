@@ -1,9 +1,16 @@
 package main
-import ("encoding"; "encoding/hex"; "example.com/csprng/csprng";
-        "go.dedis.ch/kyber/v3"; "go.dedis.ch/kyber/v3/group/edwards25519")
+import (
+  "encoding"; "encoding/hex"; "example.com/csprng/csprng";
+  "go.dedis.ch/kyber/v3"; "go.dedis.ch/kyber/v3/suites";
+  //"go.dedis.ch/kyber/v3/group/edwards25519";
+  "github.com/smartcontractkit/chainlink/core/services/signatures/secp256k1"
+)
 
-var suite *edwards25519.SuiteEd25519 = (
-  edwards25519.NewBlakeSHA256Ed25519WithRand(csprng.Get()))
+var suite suites.Suite = //*edwards25519.SuiteEd25519 =
+  //kyber uses this suite
+  //edwards25519.NewBlakeSHA256Ed25519WithRand(csprng.Get())
+  //chainlink uses this suite
+  secp256k1.NewBlakeKeccackSecp256k1WithRand(csprng.Get())
 
 // the next two functions are based on dkg_test.go's genPair()
 func pick_secret() kyber.Scalar {
@@ -30,3 +37,5 @@ func _unmarshal_keys[T encoding.BinaryUnmarshaler] (
     result[i] = allocator()
     assert_nil(result[i].UnmarshalBinary(ba)) }
   return result }
+
+func chain_valid(pub kyber.Point) bool { return secp256k1.ValidPublicKey(pub) }
