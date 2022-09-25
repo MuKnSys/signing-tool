@@ -1,7 +1,7 @@
 ; extracts from wispym lib
-; Licence:
-; This file may be used and redistributed as you wish,
-; provided only that Wispym is granted ownership of your improvements.
+; Copyright Vibhu Mohindra
+; Licence: This file may be used and redistributed as you wish,
+;          provided only that its owner is given your improvements.
 (defparameter *eof* (gensym))
 (defun slurp-exprs (file)
   (with-open-file (s file)
