@@ -3,6 +3,7 @@ To build the DKG program
 
 Ensure that the "siggy" directory has a sibling directory/project "csprng".
 And "ch".
+And "kyber", cloned from https://github.com/MuKnSys/kyber for bugfixes.
 
 ( cd build/keygen && go build )
 ( cd build/signode && go build )

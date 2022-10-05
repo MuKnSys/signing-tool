@@ -1,0 +1,1 @@
+../../src/signode/run_dss.go

@@ -7,11 +7,16 @@ const (pc_dkg, pc_dss protocol_code = 0, 1; _nprots int = 2)
 
 /* These should be increased as membership increases */
 /* TODO increase this to allow for actual (non-localhost) network latency */
-const _state_timeout time.Duration = 70 * time.Millisecond
+const _state_timeout time.Duration = 75 * time.Millisecond
 /* members' CPUs may run at different speeds. computation may be significant.
    so this should allow slowest supported CPU to do slowest step. */
-const _step_timeout time.Duration = 20 * time.Millisecond
+const _step_timeout time.Duration = 25 * time.Millisecond
+/* how long to wait after a stage to be sure all nodes have stopped processing
+   input. must be much smaller than a stage's timeout as carved out of that. */
+const _pause time.Duration = 5 * time.Millisecond
 /* Can allow specifying timeout for each step and each process function. */
+
+const _protocol_timeout_pad time.Duration = 50 * time.Millisecond
 
 type protocol_stage struct { /* value object */
   step func(*protocol_run)
@@ -47,6 +52,9 @@ func protocol_timeout(code protocol_code) time.Duration {
   for _, stg = range lookup_protocol(code).stages {result = result+stg._timeout}
   return result }
 
+func sleep_for_protocol(code protocol_code) {
+  time.Sleep(protocol_timeout(code) + _protocol_timeout_pad) }
+
 func identity_unmarshaller(dto any) (any, error) { return dto, nil }
 
 /* protocol_code to guest index to protocol run id to protocol_run */
@@ -58,7 +66,7 @@ func init() {
     _runs[i]     = make(map[int]map[string]*protocol_run)
     _runs_lck[i] = make(map[int]*sync.Mutex) } }
 
-const _rcv_buf_max int = 1000
+const _rcv_buf_max int = 10000
 var (_threshold int                        /* T in the DKG scheme */
      _members []member
      _guests map[int]guest
@@ -102,7 +110,9 @@ type protocol_run struct { /* entity */
   kyber_dat any     /* Kyber object */
   prot_dat any      /* a place for protocol specific data */
   _state int        /* op code of messages that we are presently accepting */
-  _buffer map[int][]Message /* per-op messages for processing in future state */
+  _paused bool      /* whether in post-stage pause, discarding stage inputs */
+  _rcvbuf map[int][]Message /* per-op messages for processing in future state */
+  _sndbuf map[int][]Message /* per-op messages for sending in future state */
   _abandon bool     /* latch. steps/procs may set to abandon run mid-way */
   terminated bool   /* this becomes true after run is completed or abandoned */
 }
@@ -135,8 +145,10 @@ func _new_run(pc protocol_code, gidx int, run_id string) *protocol_run {
   assert_nil(e) /* we verified this at startup in protocol_start */
   return &protocol_run{protocol: _protocols[pc], id: run_id, lck: &sync.Mutex{},
                        nc: _ncs[pc][gidx], members: _members,
-                       guest_index: gidx, kyber_dat: d, _state: -1,
-                       _buffer: make(map[int][]Message)} }
+                       guest_index: gidx, kyber_dat: d,
+                       _state: -1, _paused: false,
+                       _rcvbuf: make(map[int][]Message),
+                       _sndbuf: make(map[int][]Message)} }
 
 func _register_run(run *protocol_run) *protocol_run {
   _runs[(*run).protocol.code][(*run).guest_index][(*run).id] = run; return run }
@@ -145,23 +157,23 @@ func _run_timed_steps(r *protocol_run) {
   var (step func(*protocol_run); msg Message; final int; t time.Time=time.Now())
   (*r).lck.Lock()
   for final = len((*r).protocol.stages)-1; (*r)._state < final; {
+    if (*r)._state > -1 {
+      (*r)._paused = true; _unlocked_sleep(r, _pause); (*r)._paused = false }
     (*r)._state = (*r)._state + 1
     var stage protocol_stage = (*r).protocol.stages[(*r)._state]
     t = t.Add(stage._timeout)
-    var p bool = (stage.processor != nil)
+    _flush_snd_buf(r)
     if !abandoned(r) {
       step = (*r).protocol.stages[(*r)._state].step
-      if step != nil {step(r)}
-      if !abandoned(r) {
-        if p {
-          for _,msg=range(*r)._buffer[(*r)._state] {
-            _process_msg(r,msg)
-            if abandoned(r) {break} }}}}
-    delete((*r)._buffer, (*r)._state)
-    if (!abandoned(r)) {
-      if p{(*r).lck.Unlock()};time.Sleep(time.Until(t));if p{(*r).lck.Lock()}}}
+      if step != nil { step(r) } }
+    for _, msg = range (*r)._rcvbuf[(*r)._state] { _process_msg(r, msg) }
+    delete((*r)._rcvbuf, (*r)._state)
+    _unlocked_sleep(r, time.Until(t)) }
   (*r).terminated = true
   (*r).lck.Unlock() }
+
+func _unlocked_sleep(r *protocol_run, d time.Duration) {
+  (*r).lck.Unlock(); time.Sleep(d); (*r).lck.Lock() }
 
 /* This is called by the network layer when an incoming message is received */
 func _receive_msg(msg Message) {
@@ -181,45 +193,52 @@ func _run_incoming_queue_consumer(at time.Time, q chan Message) {
     msg = <-q
     run = ensure_active_run(msg.ProtocolCode, msg.RecipientIndex, msg.RunId)
     (*run).lck.Lock()
-    if msg.Op < (*run)._state {
+    if msg.Op < (*run)._state || (msg.Op == (*run)._state && (*run)._paused) {
       warn("dropping late msg: guest/run_id/state/op: ",
            (*run).guest_index, (*run).id, (*run)._state, msg.Op)
     } else if msg.Op > (*run)._state {
       //TODO unbounded buffer can allow attacker to fill this computer's RAM
       //fmt.Println("queueing message for future state", msg)
       // Francois's idea: maybe have only one cell available per peer per step
-      (*run)._buffer[msg.Op] = append((*run)._buffer[msg.Op], msg)
+      (*run)._rcvbuf[msg.Op] = append((*run)._rcvbuf[msg.Op], msg)
     } else {
       _process_msg(run, msg)
     }
     (*run).lck.Unlock() } }
 
 func _process_msg(run *protocol_run, msg Message) {
-  var (proc func(*protocol_run,any); u func(any)(any,error); arg any; e error)
+  var (proc func(*protocol_run,any); stage protocol_stage; arg any; e error)
   if abandoned(run) { return }
-  u = (*run).protocol.stages[msg.Op].unmarshaller
-  proc = (*run).protocol.stages[msg.Op].processor
-  if reflect.TypeOf(msg.DTO) != (*run).protocol.stages[msg.Op].dto_type {
-    warn("dto is wrong type"); return }
-  arg, e = u(msg.DTO)
+  stage = (*run).protocol.stages[msg.Op]
+  proc = stage.processor
+  if proc == nil { return }
+  if reflect.TypeOf(msg.DTO) != stage.dto_type{warn("dto is wrong type");return}
+  arg, e = stage.unmarshaller(msg.DTO)
   if e != nil {warn("error unmarshalling DTO. error/dto:", e, msg.DTO); return}
   proc(run, arg) }
 
 /* does not send to self */
 func broadcast(run *protocol_run, op int, dto any) {
-  var (i int)
-  for i, _ = range (*run).members {
-    if (i != (*run).guest_index) { send(run, i, op, dto) }}}
+  var (i int); for i, _ = range (*run).members { _send1(run, i, op, dto) } }
 
 /* does not send to self */
 func multicast(midxs []int, run *protocol_run, op int, dto any) {
-  var (i int)
-  for _, i = range midxs {
-    if i != (*run).guest_index { send(run, i, op, dto) } } }
+  var (i int); for _, i = range midxs { _send1(run, i, op, dto) } }
+
+func _send1(run *protocol_run, index int, op int, dto any) {
+  if index != (*run).guest_index { send(run, index, op, dto) } }
 
 func send(run *protocol_run, index int, op int, dto any) {
-  try_send((*run).nc, index, _make_msg(run, index, op, dto)) }
+  var m Message = _make_msg(run, index, op, dto)
+  if op > (*run)._state {(*run)._sndbuf[op] = append((*run)._sndbuf[op],m)} else
+                        {try_send((*run).nc, m.RecipientIndex, m)} }
 
 func _make_msg(run *protocol_run, rcpt_idx int, op int, dto any) Message {
   return Message{ProtocolCode: (*run).protocol.code, RecipientIndex: rcpt_idx,
                  RunId: (*run).id, Op: op, DTO: dto} }
+
+func _flush_snd_buf(r *protocol_run) {
+  var m Message
+  for _, m = range (*r)._sndbuf[(*r)._state] {
+    try_send((*r).nc, m.RecipientIndex, m) }
+  delete((*r)._sndbuf, (*r)._state) }
