@@ -19,5 +19,6 @@ func start_listeners(receiver func(Message), addresses []string) {
 
 func (t *SigServer) Receive(msg Message, resp *int) error {
   *resp = 0
+  /* TODO verify that msg has been signed by msg.SenderIndex */
   _receiver(msg)
   return nil }

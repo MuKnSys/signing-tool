@@ -21,20 +21,24 @@ const _protocol_timeout_pad time.Duration = 50 * time.Millisecond
 type protocol_stage struct { /* value object */
   step func(*protocol_run)
   processor func(*protocol_run,any) /* processes a received message */
-  unmarshaller func(any)(any,error)
+  unmarshaller func(any)(any,error) /* must be provided when processor is */
+  sender_valid func(any,int)bool    /* must be provided when processor is */
   dto any
   dto_type reflect.Type
   _timeout time.Duration
 }
 func ps(step func(*protocol_run), processor func(*protocol_run,any),
-        unmarshaller func(any)(any,error), dto any) protocol_stage {
+        unmarshaller func(any)(any,error), sender_valid func(any,int)bool,
+        dto any) protocol_stage {
   var d time.Duration; if processor==nil{d=_step_timeout}else{d=_state_timeout}
-  return protocol_stage{step,processor,unmarshaller,dto,reflect.TypeOf(dto),d} }
+  return protocol_stage{step, processor, unmarshaller, sender_valid, dto,
+                        reflect.TypeOf(dto), d} }
 
 type protocol struct { /* value object. can optimise by referring to address. */
   code protocol_code
   make_kyber_dat func(guest,[]member,int)(any,error) /* constructs Kyber obj */
   stages []protocol_stage                            /* indexed by op code */
+  cleanup func(*protocol_run)
 }
 
 var _protocols [_nprots]protocol
@@ -58,13 +62,17 @@ func sleep_for_protocol(code protocol_code) {
 func identity_unmarshaller(dto any) (any, error) { return dto, nil }
 
 /* protocol_code to guest index to protocol run id to protocol_run */
-var _runs     [_nprots]map[int]map[string]*protocol_run
-var _runs_lck [_nprots]map[int]*sync.Mutex
+var _runs         [_nprots]map[int]map[string]*protocol_run
+var _runs_lck     [_nprots]map[int]*sync.Mutex
+var _term_obs_lck [_nprots]map[int]*sync.Mutex
+var _term_obs     [_nprots]map[int]map[string][]chan int /* unspecific value */
 func init() {
   var i int
   for i = 0; i < _nprots; i++ {
-    _runs[i]     = make(map[int]map[string]*protocol_run)
-    _runs_lck[i] = make(map[int]*sync.Mutex) } }
+    _runs[i]         = make(map[int]map[string]*protocol_run)
+    _runs_lck[i]     = make(map[int]*sync.Mutex)
+    _term_obs[i]     = make(map[int]map[string][]chan int)
+    _term_obs_lck[i] = make(map[int]*sync.Mutex) } }
 
 const _rcv_buf_max int = 10000
 var (_threshold int                        /* T in the DKG scheme */
@@ -73,30 +81,55 @@ var (_threshold int                        /* T in the DKG scheme */
      _ncs    [_nprots]map[int]*net_caller  /* indexed by protocol, guest */
      _rcv_qs [_nprots]map[int]chan Message /* indexed by protocol, guest */ )
 
+var prot_fw *fw
+
 /* prereq: all _nprots protocols must have registered via register_protocol */
 func protocol_start(at time.Time, lay layout, gs map[int]guest, t int) {
-  var (i, gidx int; g guest; addresses []string; e error)
   _guests = gs; _threshold = t; _members = lay.members
+  _verify_config_suits_make_kyber_dat()
+  _init_runs_and_obs()
+  _init_outputs()
+  _start_net_callers(lay)
+  _start_rcv_queue_consumers()
+  prot_fw = make_fw(_receive_msg, _nprots, gs, at)
+  _start_listeners1() }
+
+func _verify_config_suits_make_kyber_dat() {
+  var (i int; g guest; e error)
   for i = 0; i < _nprots; i++ { /* verify that config suits make_kyber_dat */
     for _, g = range _guests {
-      _,e = _protocols[i].make_kyber_dat(g,_members,_threshold); assert_nil(e)}}
+      _,e=_protocols[i].make_kyber_dat(g,_members,_threshold); assert_nil(e)}}}
+
+func _init_runs_and_obs() {
+  var (i, gidx int)
   for i = 0; i < _nprots; i++ {
     for gidx, _ = range _guests {
-      _runs[i][gidx]     = make(map[string]*protocol_run)
-      _runs_lck[i][gidx] = &sync.Mutex{} } }
+      _runs[i][gidx]         = make(map[string]*protocol_run)
+      _runs_lck[i][gidx]     = &sync.Mutex{}
+      _term_obs[i][gidx]     = make(map[string][]chan int)
+      _term_obs_lck[i][gidx] = &sync.Mutex{} } } }
+
+func _start_net_callers(lay layout) {
+  var (i, gidx int)
   for i = 0; i < _nprots; i++ {
     _ncs[i] = make(map[int]*net_caller)
     for gidx, _ = range _guests {
-      _ncs[i][gidx] = start_net_caller(lay.addrs, lay.member_to_addr)}}
+      _ncs[i][gidx] = start_net_caller(lay.addrs, lay.member_to_addr)}}}
+
+func _start_rcv_queue_consumers() {
+  var (i, gidx int)
   for i = 0; i < _nprots; i++ {
     _rcv_qs[i] = make(map[int]chan Message)
     for gidx, _ = range _guests {
       _rcv_qs[i][gidx] = make(chan Message, _rcv_buf_max)
-      go _run_incoming_queue_consumer(at, _rcv_qs[i][gidx]) } }
-  /* now that everything is initialised, it's safe to start serving network */
+      go _run_incoming_queue_consumer(_rcv_qs[i][gidx]) } } }
+
+func _start_listeners1() {
+  var (g guest; addresses []string)
   addresses = make([]string, 0, len(_guests))
   for _, g = range _guests { addresses = append(addresses, g.addr) }
-  start_listeners(_receive_msg, unique(addresses)) }
+  start_listeners(fw_input(prot_fw), unique(addresses)) }
+
 
 /* TODO Flaw: Francois points out that ID being random bits is inadequate.
               Attacker can replay somebody's messages from a past run. */
@@ -121,7 +154,6 @@ func abandon(r *protocol_run) { (*r)._abandon = true }
 func abandon_if(r *protocol_run, cond bool) { if cond { abandon(r) } }
 func abandoned(r *protocol_run) bool { return (*r)._abandon }
 
-//TODO don't let attack fill our RAM with hundreds of runs
 func ensure_active_run(pc protocol_code, gidx int, run_id string) *protocol_run{
   var (run *protocol_run; act bool)
   run, act = _ensure_run(pc, gidx, run_id)
@@ -153,6 +185,11 @@ func _new_run(pc protocol_code, gidx int, run_id string) *protocol_run {
 func _register_run(run *protocol_run) *protocol_run {
   _runs[(*run).protocol.code][(*run).guest_index][(*run).id] = run; return run }
 
+func _delete_run(msg Message) {
+  var (pc protocol_code = -msg.ProtocolCode; gidx int = msg.RecipientIndex)
+  _runs_lck[pc][gidx].Lock(); defer _runs_lck[pc][gidx].Unlock()
+  delete(_runs[pc][gidx], msg.RunId) }
+
 func _run_timed_steps(r *protocol_run) {
   var (step func(*protocol_run); msg Message; final int; t time.Time=time.Now())
   (*r).lck.Lock()
@@ -169,28 +206,29 @@ func _run_timed_steps(r *protocol_run) {
     for _, msg = range (*r)._rcvbuf[(*r)._state] { _process_msg(r, msg) }
     delete((*r)._rcvbuf, (*r)._state)
     _unlocked_sleep(r, time.Until(t)) }
+  (*r).protocol.cleanup(r)
   (*r).terminated = true
-  (*r).lck.Unlock() }
+  (*r).lck.Unlock()
+  _update_term_observers(r) }
 
 func _unlocked_sleep(r *protocol_run, d time.Duration) {
   (*r).lck.Unlock(); time.Sleep(d); (*r).lck.Lock() }
 
-/* This is called by the network layer when an incoming message is received */
+/* This is called by the network layer when an incoming message is received.
+   A negative protocol code is an out-of-band signal to delete the run. */
 func _receive_msg(msg Message) {
-  var (q chan Message; ok bool)
-  if !(0 <= msg.ProtocolCode && msg.ProtocolCode < _nprots) {
-    warn("bad protocol", msg.ProtocolCode); return }
+  if (msg.ProtocolCode < 0) {
+    _rcv_qs[-msg.ProtocolCode][msg.RecipientIndex] <- msg; return }
   if !(0 <= msg.Op && msg.Op < len(_protocols[msg.ProtocolCode].stages)) {
     warn("bad Op", msg.Op); return }
-  q, ok = _rcv_qs[msg.ProtocolCode][msg.RecipientIndex]
-  if !ok {warn("unknown recipient index", msg.RecipientIndex); return }
-  select{case q <- msg:; default:warn("incoming queue full, dropping msg",msg)}}
+  select{case _rcv_qs[msg.ProtocolCode][msg.RecipientIndex] <- msg:;
+         default:warn("incoming queue full, dropping msg", msg)}}
 
-func _run_incoming_queue_consumer(at time.Time, q chan Message) {
-  var (msg Message; run *protocol_run)
-  time.Sleep(time.Until(at))
+func _run_incoming_queue_consumer(q chan Message) {
   for ;true; {
+    var (msg Message; run *protocol_run)
     msg = <-q
+    if msg.ProtocolCode < 0 { _delete_run(msg); continue; }
     run = ensure_active_run(msg.ProtocolCode, msg.RecipientIndex, msg.RunId)
     (*run).lck.Lock()
     if msg.Op < (*run)._state || (msg.Op == (*run)._state && (*run)._paused) {
@@ -215,30 +253,84 @@ func _process_msg(run *protocol_run, msg Message) {
   if reflect.TypeOf(msg.DTO) != stage.dto_type{warn("dto is wrong type");return}
   arg, e = stage.unmarshaller(msg.DTO)
   if e != nil {warn("error unmarshalling DTO. error/dto:", e, msg.DTO); return}
+  if !(0 <= msg.SenderIndex && msg.SenderIndex < len(_members) &&
+       stage.sender_valid(arg, msg.SenderIndex)) {
+    warn("invalid sender index or imposter"); return }
   proc(run, arg) }
 
 /* does not send to self */
-func broadcast(run *protocol_run, op int, dto any) {
-  var (i int); for i, _ = range (*run).members { _send1(run, i, op, dto) } }
+func broadcast(r *protocol_run, op int, dto any) {
+  var (i int); for i, _ = range (*r).members { _send1(r, i, op, dto) } }
 
 /* does not send to self */
-func multicast(midxs []int, run *protocol_run, op int, dto any) {
-  var (i int); for _, i = range midxs { _send1(run, i, op, dto) } }
+func multicast(midxs []int, r *protocol_run, op int, dto any) {
+  var (i int); for _, i = range midxs { _send1(r, i, op, dto) } }
 
-func _send1(run *protocol_run, index int, op int, dto any) {
-  if index != (*run).guest_index { send(run, index, op, dto) } }
+func _send1(r *protocol_run, index int, op int, dto any) {
+  if index != (*r).guest_index { send(r, index, op, dto) } }
 
-func send(run *protocol_run, index int, op int, dto any) {
-  var m Message = _make_msg(run, index, op, dto)
-  if op > (*run)._state {(*run)._sndbuf[op] = append((*run)._sndbuf[op],m)} else
-                        {try_send((*run).nc, m.RecipientIndex, m)} }
+func send(r *protocol_run, index int, op int, dto any) {
+  var m Message = _make_msg(r, index, op, dto)
+  if op > (*r)._state {(*r)._sndbuf[op] = append((*r)._sndbuf[op],m)} else
+                      {try_send((*r).nc, m.RecipientIndex, m)} }
 
-func _make_msg(run *protocol_run, rcpt_idx int, op int, dto any) Message {
-  return Message{ProtocolCode: (*run).protocol.code, RecipientIndex: rcpt_idx,
-                 RunId: (*run).id, Op: op, DTO: dto} }
+func _make_msg(r *protocol_run, rcpt_idx int, op int, dto any) Message {
+  return Message{SenderIndex: (*r).guest_index,
+                 ProtocolCode: (*r).protocol.code, RecipientIndex: rcpt_idx,
+                 RunId: (*r).id, Op: op, DTO: dto} }
 
 func _flush_snd_buf(r *protocol_run) {
   var m Message
   for _, m = range (*r)._sndbuf[(*r)._state] {
     try_send((*r).nc, m.RecipientIndex, m) }
   delete((*r)._sndbuf, (*r)._state) }
+
+/* you should register observers before initiating the run */
+func obs_term(p protocol_code, gidx int, run_id string) chan int {
+  var result chan int = make(chan int, 1)
+  _term_obs_lck[p][gidx].Lock()
+    _term_obs[p][gidx][run_id] = append(_term_obs[p][gidx][run_id], result)
+  _term_obs_lck[p][gidx].Unlock()
+  var (r *protocol_run; hit bool; term bool = false) /* concurrent run */
+  _runs_lck[p][gidx].Lock()
+    r, hit = _runs[p][gidx][run_id]
+  _runs_lck[p][gidx].Unlock()
+  if hit { (*r).lck.Lock(); term = r.terminated; (*r).lck.Unlock() }
+  if term { _update_term_observers(r) } /* because may have missed update */
+  return result }
+
+func _update_term_observers(r *protocol_run) {
+  var (pc protocol_code = (*r).protocol.code; gidx int = (*r).guest_index;
+       rid string = (*r).id; chans []chan int; c chan int)
+  _term_obs_lck[pc][gidx].Lock();
+    chans = _term_obs[pc][gidx][rid]
+    delete(_term_obs[pc][gidx], rid)
+  _term_obs_lck[pc][gidx].Unlock()
+  for _, c = range chans { c <- 0; close(c); } }
+
+/* protocol outputs */
+
+type prot_output = any
+/* protocol to guest index to run_id to run output */
+var _outputs [_nprots]map[int]map[string]prot_output
+var _outputs_lcks [_nprots]map[int]*sync.Mutex
+
+func _init_outputs() {
+  var (i, gidx int)
+  for i = 0; i < _nprots; i++ {
+    _outputs[i] = make(map[int]map[string]prot_output)
+    _outputs_lcks[i] = make(map[int]*sync.Mutex)
+    for gidx, _ = range _guests {
+      _outputs[i][gidx] = make(map[string]prot_output)
+      _outputs_lcks[i][gidx] = &sync.Mutex{} }}}
+
+func push_output(pc protocol_code, gidx int, run_id string, value prot_output) {
+  _outputs_lcks[pc][gidx].Lock(); defer _outputs_lcks[pc][gidx].Unlock()
+  _outputs[pc][gidx][run_id] = value }
+
+func pop_output(pc protocol_code, gidx int, run_id string) (prot_output, bool) {
+  var (result prot_output; hit bool)
+  _outputs_lcks[pc][gidx].Lock(); defer _outputs_lcks[pc][gidx].Unlock()
+  result, hit = _outputs[pc][gidx][run_id]
+  delete(_outputs[pc][gidx], run_id)
+  return result, hit }

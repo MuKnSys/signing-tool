@@ -14,15 +14,24 @@ func init() {
       make_kyber_dat: make_dkg_kdat,
       stages:
       []protocol_stage {
-        ps(step_init,nil,nil,nil),
-        ps(step_deal,process_deal,dto_to_deal,DealDTO{}),
-        ps(nil,process_response,identity_unmarshaller,&dkg.Response{}),
-        ps(nil,process_justification,dto_to_justification,JustificationDTO{}),
-        ps(step_vss_done,nil,nil,nil),
-        ps(step_commits,process_commits,dto_to_commits,CommitsDTO{}),
-        ps(nil,process_compl_commits,dto_to_compl_commits,ComplCommitsDTO{}),
-        ps(nil,process_recons_commits,dto_to_recons_commits,ReconsCommitsDTO{}),
-        ps(step_final,nil,nil,nil) } })}
+        ps(step_init,nil,nil,nil,nil),
+        ps(step_deal,process_deal,dto_to_deal,
+           _dkg_deal_v,DealDTO{}),
+        ps(nil,process_response,identity_unmarshaller,
+           _dkg_response_v,&dkg.Response{}),
+        ps(nil,process_justification,dto_to_justification,
+           _dkg_justification_v,JustificationDTO{}),
+        ps(step_vss_done,nil,nil,nil,nil),
+        ps(step_commits,process_commits,dto_to_commits,
+           _dkg_commits_v,CommitsDTO{}),
+        ps(nil,process_compl_commits,dto_to_compl_commits,
+           _dkg_compl_commits_v,ComplCommitsDTO{}),
+        ps(nil,process_recons_commits,dto_to_recons_commits,
+           _dkg_recons_commits_v,ReconsCommitsDTO{}),
+        ps(step_final,nil,nil,nil,nil) },
+      cleanup: dkg_cleanup })}
+
+func dkg_cleanup(r *protocol_run) {}
 
 func make_dkg_kdat(g guest, members []member, threshold int) (any, error) {
   return dkg.NewDistKeyGenerator(suite, g.sec, member_pubs(members), threshold)}
@@ -106,14 +115,34 @@ func process_recons_commits(run *protocol_run, recons any) {
   warn_if_err(
     _dkg_kdat(run).ProcessReconstructCommits(recons.(*dkg.ReconstructCommits)))}
 
-//TODO delete completed protocol runs once we've no more use for them
 func step_final(run *protocol_run) {
   var (share *dkg.DistKeyShare; e error)
   if _dkg_kdat(run).Finished() {
     share, e = _dkg_kdat(run).DistKeyShare()
     if e != nil { abandon(run); warn(e); return }
-    note_dks((*run).guest_index, (*run).id, share, (*_dkg_pdat(run)).qual)
-    fmt.Println("DistKeyShare: ", share)
+    push_output(pc_dkg, (*run).guest_index, (*run).id,
+                dks {share: share, qual: (*_dkg_pdat(run)).qual})
   } else {
     abandon(run); fmt.Println("finished is false")
   } }
+
+type dks struct { /* value object */
+  share *dkg.DistKeyShare
+  qual []int
+}
+
+/* validators */
+
+func _dkg_deal_v(kybdat any, sender int) bool {
+  return (*(kybdat.(*dkg.Deal))).Index == uint32(sender) }
+func _dkg_response_v(kybdat any, sender int) bool {
+  return (*((*(kybdat.(*dkg.Response))).Response)).Index == uint32(sender) }
+func _dkg_justification_v(kybdat any, sender int) bool {
+  var (j *dkg.Justification = kybdat.(*dkg.Justification); s = uint32(sender))
+  return (*j).Index == s && (*((*j).Justification)).Index == s }
+func _dkg_commits_v(kybdat any, sender int) bool {
+  return (*(kybdat.(*dkg.SecretCommits))).Index == uint32(sender) }
+func _dkg_compl_commits_v(kybdat any, sender int) bool {
+  return (*(kybdat.(*dkg.ComplaintCommits))).Index == uint32(sender) }
+func _dkg_recons_commits_v(kybdat any, sender int) bool {
+  return (*(kybdat.(*dkg.ReconstructCommits))).Index == uint32(sender) }
