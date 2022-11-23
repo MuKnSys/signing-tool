@@ -1,0 +1,62 @@
+The run-configuration directory
+===============================
+
+I usually create a directory, such as run/, to contain (symlinks to) the
+executable program files, the configuration file (source and translated
+output) and a subdirectory for key files. I always run the executable
+programs with that directory (run/) as my current working directory.
+
+Configuration file structure
+----------------------------
+
+I usually name my config file config.in.
+
+Here is a sample with three hosts, each having one guest member.
+So there are three members in total.
+
+(hosts
+  (h1 "192.168.201.1:14001" ("public_1"))
+  (h2 "192.168.201.2:14001" ("public_2"))
+  (h3 "192.168.201.3:14001" ("public_3")))
+
+The labels h1,h2,h3 are meaningless.
+The "public_X" strings are names of files containing public keys.
+The description above says that the member whose public key is in a file
+named public_1 is running at 192.168.201.1 port 14001. Etc.
+The "public_X" strings are filenames not pathnames. The single directory
+containing these files is to be specified as a command-line argument
+when starting the "signode" program. E.g. you may place all the public
+key files beneath a directory you call test_keys/public/ and pass
+test_keys/public/ as a command-line argument. Within that directory,
+as per the configuration file above, the program will expect to find
+all three named files: public_1, public_2, public_3.
+
+I convert config.in to an expanded JSON file via a process partially
+documented in usage.txt to produce a file I usually name config.out,
+whose format the Go program can understand. The Go program can't directly
+understand the format of config.in shown above.
+
+usage.txt describes how to build and run the included Go program named
+"keygen" to produce a pair of files containing a public key and its
+corresponding secret key. The program expects the secret key file to have
+a "secret_" prefix and to be in a directory passed to the program as a
+command-line argument. This is different from the directory containing all
+the public key files. E.g. the human member at each host who launches an
+instance of the program on that host may choose to place his/her secret
+key in a directory named test_keys/secret/
+
+When the program runs, it'll look in the specified secret key directory
+for a file named with a secret_ prefix and load it. It'll also load all
+the public keys, learn which public key matches the one secret key and
+therefore represents the guest member on that node, and then know which
+port to listen on and which other IP/ports to connect to to communicate
+with other members.
+
+For example, if you are a member with keypair in the files public_1,
+secret_101, and you start the program, it'll know by the contents of
+secret_101 that it is to listen on 192.168.201.1:14001 and connect to
+its two peers at 192.168.201.2:14001 and 192.168.201.3:14001 respectively.
+
+The program is more general than described in that, to make testing easy,
+a single running instance can host more than one guest member. But that
+is not discussed here.

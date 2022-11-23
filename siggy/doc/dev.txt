@@ -1,0 +1,115 @@
+[This document is not authoritative. The code is the authority.]
+
+
+Signing-tool overview
+---------------------
+
+The signing-tool's main project is siggy. It depends on two big libraries:
+ch, which is a trimmed fork of chainlink, and kyber, which is a fork
+of the kyber library. It also uses a small internal library, csprng,
+for random number generation; another library, s2j, for converting
+s-expressions to json; and hostcomp that helps compile a user-defined
+s-expression configuration file.
+
+An instance of siggy knows its host, the members running in that host
+(only one in production) known as guests, and the entire set of members
+in the network. It knows the private keys of guests but only the public
+keys of other members. It knows which network address the various members
+are running on.
+
+siggy has two programs: a key generator, keygen, that is used when setting
+up members and guests; and the actual long-running process, signode,
+that runs the application protocols for distributed key-generation (DKG)
+(different from the private/public keys above) and distributed signing
+(DSS). Signode is what is of interest.
+
+Signode's command line arguments tell it whether to run the DKG protocol
+or the DSS protocol. When running the DSS protocol, you can feed it a
+list of documents on standard input (which may be a pipe). It will sign
+all those documents at whatever times are also specified.
+
+DSS is a misnomer here as any run of DSS also includes one run of the
+DKG's steps. But I'll continue to call this combined effort DSS.
+
+Programming conventions
+-----------------------
+
+Each function fits into 80 columns, 23 lines.
+They have no empty lines, to make navigation easy in VI.
+No use of Go's := . All vars have types declared, so I could understand.
+Every struct is labelled with whether it has value or identity semantics.
+  Those with value semantics are immutable soon after construction.
+
+I don't use Go's package/namespace support.
+  I wanted one per file and that would require a directory per file.
+  I also didn't care for having to capitalise exported functions.
+Symbols starting with underscore only have file-scope.
+The files are split into directories beneath src/.
+All files are in the same Go package.
+To build, therefore, they are all symlinked into a single directory in build/.
+
+File structure
+--------------
+
+siggy/src/ contains seven directories. I'll call each a module.
+At the highest level are three components:
+  common, keypair_generator, signature_tool.
+Their names have no representations in the file system.
+These are the modules each component contains:
+  common: modules=base,util
+  keypair_generator: modules=keygen
+  signature_tool: modules=signode,protocol,net,layout
+At the highest level, these are the two layers (bottom to top):
+  common
+  keypair_generator, signature_tool
+The centre of the signature_tool component is the module named protocol.
+
+Siggy has about 1500 lines of code in 21 Go files in these seven modules.
+
+packages.pdf shows the intermodule-dependencies.
+
+The modules
+-----------
+
+module protocol
+
+The abstract core is in prot.go. It has the general ability to run a timed
+protocol consisting of a sequence of stages. The two specific protocols
+implemented are in dkg.go and dss.go. A particular protocol specifies
+for each of its stages a tuple that describes the stage function to run,
+the data unmarshaller, the validation function etc.
+
+This is the most important module. Most of your time studying the entire
+program will go into studying this module.
+
+firewall.go drops all incoming messages by default except those that are
+expected. When the user says a document is to be signed, for example, the
+application informs the firewall to open up for the specified duration.
+
+"dto" stands for data-transfer object, which means something fit for
+the network wire.
+
+module net
+
+This implements Go RPC based communication. It is to be
+replaced. Importantly, it communicates in clear-text, doesn't prevent
+DoS attacks, and does _not_ sign over or verify the Message struct's
+SenderIndex field. It, or its substitute networking code, must do that.
+
+module layout
+
+This represents the parsed configuration file describing which members
+are at which remote IP addresses, which ones are on the local node etc.
+
+module util: Domain-agnostic utilities
+
+module base: Domain-aware but application-agnostic utilities
+
+module keygen: The key generator. These are keys used for communication.
+
+module: signode
+
+This is the application layer that decides based on the command-line
+arguments whether to run the DKG or DSS protocols. It informs the
+firewall as necessary, schedules runs at the correct time, and prints
+results after the runs complete.

@@ -1,5 +1,5 @@
 ----
-To build the DKG program
+To build the programs,
 
 Ensure that the "siggy" directory has a sibling directory/project "csprng".
 And "ch".
@@ -13,8 +13,10 @@ It can be used to generate a longterm distributed key and also to sign.
 
 Here is how to run all members in a single process:
 
+# this directory is preconfigured for three members in a single process
 cd run
 # generate a longterm distributed key (needn't repeat this per signing)
+# we specify a threshold T of 2 members. T in Kyber library's sense.
 ./signode config.out test_keys/public/ test_keys/p1_secret/ 2 _
 # the program prints the name of a file in /tmp containing the longterm shares
 # move the file to test_keys/p1_secret/longterms_t2
@@ -25,12 +27,14 @@ test_keys/p1_secret/longterms_t2
 # the triple supplied is (run_id_namespace start_time doc)
 #   run_id_namespace is a namespace in which you guarantee that the run's time
 #     forms a unique run ID.
-#   start_time says when to perform the run; _ means to use some default time
-#     (only useful when testing in a single process).
+#   start_time says when to perform the run. format: 2022-09-01T05:50:42+02:00 .
+#     a value of _ means to use some default time,
+#     and is only for when testing with all members running in a single process.
 #   doc is a bigint represented as hex.
 
 ----
 Hints for if you want to specify your own configuration (config.out),
+
 - generate as many keypairs as you want by doing "cd run && ./keygen"
 - specify hosts and the members local to those hosts in run/config.in
   - the h1, h2 labels are meaningless at present
@@ -41,13 +45,15 @@ Hints for if you want to specify your own configuration (config.out),
 - on each host run "./signode config.out $D $S $T $inittime
     to generate the longterm distributed key,
     where T is desired threshold and inittime indicates when
-      program initialization is to be regarded as completed.
+      program initialization is to be regarded as complete.
       inittime is also used to compute a time at which the run should start.
+      all time formats are: 2022-09-01T05:50:42+02:00
+      time values may be _ when testing with all members in one process.
 - the same command but with additional arg <longterm_file_path>
     can run the signing protocol. runs are requested on stdin.
 
 ----
-Hints for converting config.in to config.out
+Hints for converting config.in to config.out,
 
 Preparation: Install GNU CLISP
 Step 1: Read and apply hostcomp/hostcomp.lisp to expand config.in
