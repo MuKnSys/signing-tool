@@ -13,13 +13,14 @@ I usually name my config file config.in.
 
 Here is a sample with three hosts, each having one guest member.
 So there are three members in total.
+The syntax is that of a Common Lisp s-expression.
 
 (hosts
   (h1 "192.168.201.1:14001" ("public_1"))
   (h2 "192.168.201.2:14001" ("public_2"))
   (h3 "192.168.201.3:14001" ("public_3")))
 
-The labels h1,h2,h3 are meaningless.
+The host labels h1,h2,h3 are meaningless.
 The "public_X" strings are names of files containing public keys.
 The description above says that the member whose public key is in a file
 named public_1 is running at 192.168.201.1 port 14001. Etc.
@@ -38,12 +39,12 @@ understand the format of config.in shown above.
 
 usage.txt describes how to build and run the included Go program named
 "keygen" to produce a pair of files containing a public key and its
-corresponding secret key. The program expects the secret key file to have
-a "secret_" prefix and to be in a directory passed to the program as a
-command-line argument. This is different from the directory containing all
-the public key files. E.g. the human member at each host who launches an
-instance of the program on that host may choose to place his/her secret
-key in a directory named test_keys/secret/
+corresponding secret key. The signode program expects the secret key
+file to have a "secret_" prefix and to be in a directory passed to
+it as a command-line argument. This is different from the directory
+containing all the public key files. E.g. the human member at each host
+who launches an instance of the program on that host may choose to place
+his/her secret key in a directory named test_keys/secret/ .
 
 When the program runs, it'll look in the specified secret key directory
 for a file named with a secret_ prefix and load it. It'll also load all
@@ -59,4 +60,5 @@ its two peers at 192.168.201.2:14001 and 192.168.201.3:14001 respectively.
 
 The program is more general than described in that, to make testing easy,
 a single running instance can host more than one guest member. But that
-is not discussed here.
+is not discussed here. However, it explains why the public key file
+names above are in a list.

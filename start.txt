@@ -1,0 +1,9 @@
+siggy/ is this threshold signature tool's most important sub directory.
+
+hostcomp/ and s2j/ contain programs that help you compile configuration files.
+
+csprng/ has a library that produces secure pseudorandom numbers.
+
+ch/ is forked and trimmed from an open-source project named chainlink.
+
+Start by looking in siggy/doc/ e.g. at usage.txt.
