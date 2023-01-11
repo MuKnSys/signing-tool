@@ -1,0 +1,8 @@
+https://blog.chain.link/threshold-signatures-in-chainlink/
+
+https://github.com/smartcontractkit/chainlink/pull/1272/files
+https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.5/dev/SchnorrSECP256K1.sol
+
+https://link.springer.com/article/10.1007/s00145-006-0347-3
+
+https://github.com/dedis/kyber/blob/master/share/dkg/rabin/dkg.go#L14
